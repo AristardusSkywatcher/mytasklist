@@ -1,0 +1,26 @@
+FROM php:7.1.7-apache
+RUN apt-get update -qq
+RUN apt-get install -y apt-utils libswe-dev vim unzip 
+RUN php -r "copy('https://getcomposer.org/installer', '/root/composer-setup.php');"
+RUN php -r "if (hash_file('SHA384', '/root/composer-setup.php') === '544e09ee996cdf60ece3804abc52599c22b1f40f4323403c44d44fdfdd586475ca9813a858088ffbc1f233e9b180f061') { echo 'Installer verified'; } else { echo 'Installer corrupt'; unlink('/root/composer-setup.php'); } echo PHP_EOL;"
+RUN php /root/composer-setup.php
+RUN php -r "unlink('/root/composer-setup.php');"
+RUN useradd -g www-data -s /bin/bash -d /home/ubuntu -m ubuntu
+RUN ln -s /etc/apache2/mods-available/rewrite.load /etc/apache2/mods-enabled/
+RUN docker-php-ext-install pdo pdo_mysql
+RUN docker-php-ext-install mysqli
+RUN apt-get update && apt-get install -y \
+		libfreetype6-dev \
+		libjpeg62-turbo-dev \
+		libmcrypt-dev \
+		libpng-dev \
+	&& docker-php-ext-install -j$(nproc) iconv mcrypt \
+	&& docker-php-ext-configure gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ \
+	&& docker-php-ext-install -j$(nproc) gd
+#RUN apt-get clean
+
+COPY ./container/000-default.conf /etc/apache2/sites-available/000-default.conf
+RUN pecl install xdebug && docker-php-ext-enable xdebug
+RUN echo "xdebug.remote_enable=1" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
+	&& echo "xdebug.remote_autostart=1" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini \
+	&& echo "xdebug.remote_port=9000" >> /usr/local/etc/php/conf.d/docker-php-ext-xdebug.ini
