@@ -4,7 +4,12 @@
 
 
 
-<!-- <script src="{{ asset('js/tasklist.js') }}"></script> -->
+<script> 
+    window.App = <?= json_encode([
+        'project' => $project,
+        'userName' => auth()->user()->name,
+        'tasks' => $tasks]); ?>
+</script>
 
 
 <div class="container" id="app">
@@ -14,11 +19,6 @@
                 <div class="card-header">Dashboard</div>
 
                 <div class="card-body">
-                     You are logged in!!!
-                     <hr>
-                    
-                    
-                    <div><h4>Task List</h4><hr></div>
                     
                     <tasklist></tasklist>
                 </div>

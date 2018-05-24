@@ -17,19 +17,20 @@
 
 Broadcast::channel('tasks.{project}', function ($user, $project) {
 
-    $canAccess = [];
+    // $canAccess = [];
 
-    if ($user->email === 'tardu.demirel@live.com') {
-        $canAccess = [1, 3];
+    // if ($user->email === 'tardu.demirel@live.com') {
+    //     $canAccess = [1, 3];
 
-    }
-    if ($user->email === 'john@miller.com') {
-        $canAccess = [2, 4];
-    }
+    // }
+    // if ($user->email === 'john@miller.com') {
+    //     $canAccess = [2, 4];
+    // }
     
-    return in_array($project, $canAccess);
+    // return in_array($project, $canAccess);
 
         // return $project->participants->contains($user);
-
+        
+        return true;
 });
 

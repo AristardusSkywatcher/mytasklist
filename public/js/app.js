@@ -57,7 +57,7 @@
 /******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
 /******/
 /******/ 	// __webpack_public_path__
-/******/ 	__webpack_require__.p = "";
+/******/ 	__webpack_require__.p = "/";
 /******/
 /******/ 	// Load entry module and return exports
 /******/ 	return __webpack_require__(__webpack_require__.s = 11);
@@ -13361,9 +13361,9 @@ jQuery.isNumeric = function( obj ) {
 // https://github.com/jrburke/requirejs/wiki/Updating-existing-libraries#wiki-anon
 
 if ( true ) {
-	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_RESULT__ = function() {
+	!(__WEBPACK_AMD_DEFINE_ARRAY__ = [], __WEBPACK_AMD_DEFINE_RESULT__ = (function() {
 		return jQuery;
-	}.apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__),
+	}).apply(exports, __WEBPACK_AMD_DEFINE_ARRAY__),
 				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
 }
 
@@ -31057,9 +31057,9 @@ window.Echo = new __WEBPACK_IMPORTED_MODULE_0_laravel_echo___default.a({
 
     // Define as an anonymous module so, through path mapping, it can be
     // referenced as the "underscore" module.
-    !(__WEBPACK_AMD_DEFINE_RESULT__ = function() {
+    !(__WEBPACK_AMD_DEFINE_RESULT__ = (function() {
       return _;
-    }.call(exports, __webpack_require__, exports, module),
+    }).call(exports, __webpack_require__, exports, module),
 				__WEBPACK_AMD_DEFINE_RESULT__ !== undefined && (module.exports = __WEBPACK_AMD_DEFINE_RESULT__));
   }
   // Check for `exports` after `define` in case a build optimizer adds it.
@@ -52313,27 +52313,47 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
+//
+//
+//
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
 
-    props: ['project', 'tasks', 'projectId'],
+    // props: ['project', 'tasks', 'projectId'],
+
 
     data: function data() {
         return {
 
-            project: project,
+            project: window.App.project,
+            // tasks: [],
+            tasks: window.App.tasks,
             newTask: '',
             activePeer: false,
             typingTimer: false
-            // tasks: tasks
+
         };
     },
+
+
+    computed: {
+        channel: function channel() {
+
+            return Echo.private('tasks.1');
+        }
+    },
+
     created: function created() {
         var _this = this;
 
-        window.Echo.private('tasks.' + 1).listen('TaskCreated', function (_ref) {
-            var task = _ref.task;
-            return _this.addTask(task);
+        Echo.private('tasks.1')
+        // .listen('.App\\Events\\TaskCreated', ({task}) => this.addTask(task))
+        .listen('.App\\Events\\TaskCreated', function (_ref) {
+            var newTask = _ref.newTask;
+
+            _this.task = newTask;
+            console.log('event olustu mu');
         }).listenForWhisper('typing', this.flashActivePeer);
     },
 
@@ -52351,18 +52371,22 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
             }, 3000);
         },
         tagPeers: function tagPeers() {
-            window.Echo.private('tasks.1').whisper('typing', { name: 'hasan' });
+            Echo.private('tasks.1').whisper('typing', { name: window.App.userName });
         },
         save: function save() {
-            axios.post('/api/projects/1/tasks', { body: this.newTask }).then(function (response) {
-                return response.data;
-            }).then(this.addTask);
+            if (newTask != '') {
+                axios.post('/api/projects/1/tasks', { body: newTask }).then(function (response) {}).then(this.addTask).then(newTask);
+            }
         },
         addTask: function addTask(task) {
-            console.log(task);
-            this.activePeer = false;
-            this.project.tasks.push(task);
-            this.newTask = '';
+            if (newTask != '') {
+
+                this.activePeer = false;
+                this.tasks.push(newTask);
+
+                console.log(newTask + ' has been addedd');
+                newTask = '';
+            }
         }
     }
 
@@ -52377,14 +52401,18 @@ var render = function() {
   var _h = _vm.$createElement
   var _c = _vm._self._c || _h
   return _c("div", [
+    _c("div", [
+      _c("h3", { domProps: { textContent: _vm._s(this.project.name) } })
+    ]),
+    _vm._v(" "),
     _c(
       "ul",
       { staticClass: "list-group" },
-      _vm._l(_vm.tasks, function(task) {
+      _vm._l(this.tasks, function(task) {
         return _c("li", {
-          key: task,
+          key: task.id,
           staticClass: "list group-item",
-          domProps: { textContent: _vm._s(task.body) }
+          domProps: { textContent: _vm._s(task) }
         })
       })
     ),
@@ -52394,13 +52422,13 @@ var render = function() {
         {
           name: "model",
           rawName: "v-model",
-          value: _vm.newTask,
-          expression: "newTask"
+          value: this.newTask,
+          expression: "this.newTask"
         }
       ],
       staticClass: "form-control",
-      attrs: { type: "text", placeholder: "New Task" },
-      domProps: { value: _vm.newTask },
+      attrs: { name: "task", type: "text", placeholder: "New Task" },
+      domProps: { value: this.newTask },
       on: {
         blur: _vm.save,
         keydown: _vm.tagPeers,
@@ -52408,15 +52436,17 @@ var render = function() {
           if ($event.target.composing) {
             return
           }
-          _vm.newTask = $event.target.value
+          _vm.$set(this, "newTask", $event.target.value)
         }
       }
     }),
     _vm._v(" "),
     _vm.activePeer
-      ? _c("span", { domProps: { textContent: _vm._s(_vm.activePeer.name) } }, [
-          _vm._v(" is typing...")
-        ])
+      ? _c("span", {
+          domProps: {
+            textContent: _vm._s(_vm.activePeer.name + " is typing...")
+          }
+        })
       : _vm._e()
   ])
 }

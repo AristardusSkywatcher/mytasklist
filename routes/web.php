@@ -50,10 +50,12 @@ Route::get('/api/projects/{project}', function (Project $project) {
 });
 
 Route::post('/api/projects/{project}/tasks', function (Project $project) {
+
+    dd($project->tasks()->create(request(['body'])));
     $task = $project->tasks()->create(request(['body']));
 
+    
     $e = new TaskCreated($task);
-    // dd($e);
 
     event($e);
 
