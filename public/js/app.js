@@ -52317,6 +52317,9 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
 //
 //
 //
+//
+//
+//
 
 /* harmony default export */ __webpack_exports__["default"] = ({
 
@@ -52340,20 +52343,15 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
     computed: {
         channel: function channel() {
 
-            return Echo.private('tasks.1');
+            return window.Echo.private('tasks.1');
         }
     },
 
     created: function created() {
         var _this = this;
 
-        Echo.private('tasks.1')
-        // .listen('.App\\Events\\TaskCreated', ({task}) => this.addTask(task))
-        .listen('.App\\Events\\TaskCreated', function (_ref) {
-            var newTask = _ref.newTask;
-
-            _this.task = newTask;
-            console.log('event olustu mu');
+        this.channel.listen('TaskCreated', function (task) {
+            return _this.addTask(task.task);
         }).listenForWhisper('typing', this.flashActivePeer);
     },
 
@@ -52371,22 +52369,38 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
             }, 3000);
         },
         tagPeers: function tagPeers() {
-            Echo.private('tasks.1').whisper('typing', { name: window.App.userName });
+            this.channel.whisper('typing', { name: window.App.userName });
         },
         save: function save() {
-            if (newTask != '') {
-                axios.post('/api/projects/1/tasks', { body: newTask }).then(function (response) {}).then(this.addTask).then(newTask);
-            }
+            // if (newTask != '') {
+            axios.post('/api/projects/1/tasks', { body: newTask }).then(function (response) {
+                return response.data;
+            }).then(this.addTask);
+
+            console.log(newTask + ' is saved');
+
+            this.activePeer = false;
+
+            newTask = '';
+            // }
         },
         addTask: function addTask(task) {
-            if (newTask != '') {
+            if (this.newTask != '') {
 
                 this.activePeer = false;
-                this.tasks.push(newTask);
+                this.tasks.push(this.newTask);
 
-                console.log(newTask + ' has been addedd');
-                newTask = '';
+                console.log(this.newTask + ' has been addedd to array too');
+                this.newTask = '';
+                this.task = '';
+            } else {
+                this.tasks.push(task.body);
+
+                console.log(task.body + ' has been addedd to array only');
             }
+        },
+        noop: function noop() {
+            // do nothing ?
         }
     }
 
@@ -52410,44 +52424,74 @@ var render = function() {
       { staticClass: "list-group" },
       _vm._l(this.tasks, function(task) {
         return _c("li", {
-          key: task.id,
           staticClass: "list group-item",
           domProps: { textContent: _vm._s(task) }
         })
       })
     ),
     _vm._v(" "),
-    _c("input", {
-      directives: [
-        {
-          name: "model",
-          rawName: "v-model",
-          value: this.newTask,
-          expression: "this.newTask"
-        }
-      ],
-      staticClass: "form-control",
-      attrs: { name: "task", type: "text", placeholder: "New Task" },
-      domProps: { value: this.newTask },
-      on: {
-        blur: _vm.save,
-        keydown: _vm.tagPeers,
-        input: function($event) {
-          if ($event.target.composing) {
-            return
+    _c(
+      "form",
+      {
+        on: {
+          submit: function($event) {
+            $event.preventDefault()
+            return _vm.noop($event)
           }
-          _vm.$set(this, "newTask", $event.target.value)
         }
-      }
-    }),
-    _vm._v(" "),
-    _vm.activePeer
-      ? _c("span", {
-          domProps: {
-            textContent: _vm._s(_vm.activePeer.name + " is typing...")
+      },
+      [
+        _c("input", {
+          directives: [
+            {
+              name: "model",
+              rawName: "v-model",
+              value: this.newTask,
+              expression: "this.newTask"
+            }
+          ],
+          staticClass: "form-control",
+          attrs: { name: "newTask", type: "text", placeholder: "New Task" },
+          domProps: { value: this.newTask },
+          on: {
+            keyup: function($event) {
+              if (
+                !("button" in $event) &&
+                _vm._k($event.keyCode, "enter", 13, $event.key, "Enter")
+              ) {
+                return null
+              }
+              return _vm.noop($event)
+            },
+            keydown: _vm.tagPeers,
+            input: function($event) {
+              if ($event.target.composing) {
+                return
+              }
+              _vm.$set(this, "newTask", $event.target.value)
+            }
           }
-        })
-      : _vm._e()
+        }),
+        _vm._v(" "),
+        _c(
+          "button",
+          {
+            staticClass: "form-control",
+            attrs: { name: "button", type: "submit" },
+            on: { click: _vm.save }
+          },
+          [_vm._v("SEND")]
+        ),
+        _vm._v(" "),
+        _vm.activePeer
+          ? _c("span", {
+              domProps: {
+                textContent: _vm._s(_vm.activePeer.name + " is typing...")
+              }
+            })
+          : _vm._e()
+      ]
+    )
   ])
 }
 var staticRenderFns = []

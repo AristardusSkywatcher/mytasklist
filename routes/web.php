@@ -2,7 +2,7 @@
 
 use App\Task;
 use App\Project;
-use \App\Events\TaskCreated; 
+use App\Events\TaskCreated; 
 
 /*
 |--------------------------------------------------------------------------
@@ -40,10 +40,7 @@ Route::get('/api/projects/{project}', function (Project $project) {
     // dd($project->tasks->pluck('body'));
     $tasks = $project->tasks->pluck('body');
 
-    // dd($project);
-
     $projectId = $project->id;
-    
     
     return view('projects.show', compact('tasks', 'project', 'projectId'));
     // return $tasks;
@@ -51,15 +48,16 @@ Route::get('/api/projects/{project}', function (Project $project) {
 
 Route::post('/api/projects/{project}/tasks', function (Project $project) {
 
-    dd($project->tasks()->create(request(['body'])));
-    $task = $project->tasks()->create(request(['body']));
+    // dd($project->tasks()->create(request(['body'])));
+    $message = request(['body']);
+    $task = $project->tasks()->create($message);
 
-    
-    $e = new TaskCreated($task);
+    // $e = new App\Events\TaskCreated(request(['body']));
+    event(new TaskCreated($message));
 
-    event($e);
+    logger($task);
 
-    return $task;
+    return $message;
 });
 // Auth::routes();
 
@@ -68,3 +66,9 @@ Route::post('/api/projects/{project}/tasks', function (Project $project) {
 Route::post('/login', 'SessionsController@login');
 Route::get('/logout', 'SessionsController@logout');
 // Route::get('/home', 'SessionsController@home');
+
+Route::get('/chat', 'ChatController@index');
+Route::get('/chat/{id}', 'ChatController@show');
+Route::post('/chat/send', 'ChatController@create');
+Route::post('/chat/delete', 'ChatController@delete');
+

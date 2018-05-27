@@ -14,6 +14,8 @@ class TaskCreated implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
+    public $task;
+
     /**
      * Create a new event instance.
      *
@@ -22,7 +24,7 @@ class TaskCreated implements ShouldBroadcast
     public function __construct($task)
     {
         $this->task = $task;
-        // $this->dontBroadcastToCurrentUser();
+        $this->dontBroadcastToCurrentUser();
     }
 
     /**

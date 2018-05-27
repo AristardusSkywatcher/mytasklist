@@ -5,10 +5,13 @@
         </div>
 
         <ul class="list-group">
-            <li class="list group-item" v-for="task in this.tasks" :key="task.id" v-text="task"></li>
+            <li class="list group-item" v-for="task in this.tasks" v-text="task"></li>
         </ul>
-        <input class="form-control" name="task" type="text" placeholder="New Task" v-model="this.newTask" @blur="save" @keydown="tagPeers">
-        <span v-if="activePeer" v-text="activePeer.name+' is typing...'"> </span>
+        <form v-on:submit.prevent="noop">
+            <input class="form-control" name="newTask" type="text" placeholder="New Task" @keyup.enter="noop" v-model="this.newTask" @keydown="tagPeers">
+            <button class="form-control" name="button" type="submit" @click="save">SEND</button>
+            <span v-if="activePeer" v-text="activePeer.name+' is typing...'"> </span>
+        </form>
     </div>
 </template>
 
@@ -35,21 +38,15 @@ export default {
 
         channel() {
 
-            return Echo.private('tasks.1')
+            return window.Echo.private('tasks.1')
         }
     },
 
     created() {
         
-        Echo.private('tasks.1')
-        // .listen('.App\\Events\\TaskCreated', ({task}) => this.addTask(task))
-        .listen('.App\\Events\\TaskCreated', ({newTask}) => {
-           this.task = newTask
-           console.log('event olustu mu')
-        })
+        this.channel
+        .listen('TaskCreated', (task) => this.addTask(task.task))
         .listenForWhisper('typing', this.flashActivePeer)
-        
-        
     },
 
     methods: {
@@ -62,30 +59,46 @@ export default {
         },
 
         tagPeers() {
-             Echo.private('tasks.1')
+             this.channel
              .whisper('typing', { name: window.App.userName })
         },
 
         save() {
-            if (newTask != '') {
+            // if (newTask != '') {
                 axios.post('/api/projects/1/tasks', {body: newTask})
-                .then(response => {})
+                .then((response) => response.data)
                 .then(this.addTask)
-                .then(newTask)
-            }
+               
+                
+
+            console.log(newTask + ' is saved')
+
+                this.activePeer = false
+
+                newTask = ''
+            // }
         },
 
         addTask(task) {
-            if (newTask != '') {
+            if (this.newTask != '') {
                 
                 this.activePeer = false
-                this.tasks.push(newTask)
+                this.tasks.push(this.newTask)
 
-                console.log(newTask +' has been addedd')
-                newTask = ''
+                console.log(this.newTask +' has been addedd to array too')
+                this.newTask = ''
+                this.task = ''
 
-                
             }
+            else {
+                this.tasks.push(task.body)
+
+                console.log(task.body +' has been addedd to array only')
+            }
+        },
+
+        noop () {
+            // do nothing ?
         }
     }
 
