@@ -15,7 +15,7 @@
 //     return (int) $user->id === (int) $id;
 // });
 
-Broadcast::channel('tasks.{project}', function ($user, $project) {
+Broadcast::channel('{projectId}', function ($user, $project) {
 
     // $canAccess = [];
 

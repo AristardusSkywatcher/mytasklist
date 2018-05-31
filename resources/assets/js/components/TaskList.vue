@@ -27,6 +27,8 @@ export default {
             project: window.App.project,
             // tasks: [],
             tasks: window.App.tasks,
+            projectId: window.App.projectId,
+            chanId: window.App.chanId,
             newTask: '',
             activePeer: false,
             typingTimer: false
@@ -37,12 +39,14 @@ export default {
     computed: {
 
         channel() {
-
-            return window.Echo.private('tasks.1')
+            
+            return window.Echo.private(this.chanId)
         }
     },
 
     created() {
+
+        console.log(this.chanId)
         
         this.channel
         .listen('TaskCreated', (task) => this.addTask(task.task))
@@ -65,7 +69,7 @@ export default {
 
         save() {
             // if (newTask != '') {
-                axios.post('/api/projects/1/tasks', {body: newTask})
+                axios.post('/api/projects/'+this.projectId+'/tasks', {body: newTask})
                 .then((response) => response.data)
                 .then(this.addTask)
                

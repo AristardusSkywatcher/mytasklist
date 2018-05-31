@@ -9,21 +9,24 @@ use Illuminate\Broadcasting\PresenceChannel;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Broadcasting\InteractsWithSockets;
 use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Auth;
 
 class TaskCreated implements ShouldBroadcast
 {
     use Dispatchable, InteractsWithSockets, SerializesModels;
 
     public $task;
+    public $chanId;
 
     /**
      * Create a new event instance.
      *
      * @return void
      */
-    public function __construct($task)
+    public function __construct($task, $chanId)
     {
         $this->task = $task;
+        $this->chanId = $chanId;
         $this->dontBroadcastToCurrentUser();
     }
 
@@ -39,6 +42,10 @@ class TaskCreated implements ShouldBroadcast
         
 
         // return new PrivateChannel('tasks.' . $this->task->project_id);
-        return new PrivateChannel('tasks.1');
+
+        // $projectId = md5(Auth::user()->id);
+
+        logger("$this->chanId");
+        return new PrivateChannel($this->chanId);
     }
 }

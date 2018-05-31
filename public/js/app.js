@@ -52332,6 +52332,8 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
             project: window.App.project,
             // tasks: [],
             tasks: window.App.tasks,
+            projectId: window.App.projectId,
+            chanId: window.App.chanId,
             newTask: '',
             activePeer: false,
             typingTimer: false
@@ -52343,12 +52345,14 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
     computed: {
         channel: function channel() {
 
-            return window.Echo.private('tasks.1');
+            return window.Echo.private(this.chanId);
         }
     },
 
     created: function created() {
         var _this = this;
+
+        console.log(this.chanId);
 
         this.channel.listen('TaskCreated', function (task) {
             return _this.addTask(task.task);
@@ -52373,7 +52377,7 @@ Object.defineProperty(__webpack_exports__, "__esModule", { value: true });
         },
         save: function save() {
             // if (newTask != '') {
-            axios.post('/api/projects/1/tasks', { body: newTask }).then(function (response) {
+            axios.post('/api/projects/' + this.projectId + '/tasks', { body: newTask }).then(function (response) {
                 return response.data;
             }).then(this.addTask);
 

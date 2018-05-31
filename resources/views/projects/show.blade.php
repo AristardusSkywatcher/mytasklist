@@ -7,6 +7,8 @@
 <script> 
     window.App = <?= json_encode([
         'project' => $project,
+        'projectId' => $project->id,
+        'chanId' => $chanId,
         'userName' => auth()->user()->name,
         'tasks' => $tasks]); ?>
 </script>
@@ -19,6 +21,7 @@
                 <div class="card-header">Dashboard</div>
 
                 <div class="card-body">
+                ID: {{ $project->id}}
                     
                     <tasklist></tasklist>
                 </div>
